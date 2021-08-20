@@ -18,10 +18,11 @@ import (
 	"fmt"
 
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	"github.com/gardener/gardener/pkg/apis/seedmanagement/helper"
+	"github.com/gardener/gardener/pkg/apis/seedmanagement/encoding"
 	configv1alpha1 "github.com/gardener/gardener/pkg/gardenlet/apis/config/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
@@ -45,12 +46,12 @@ func SetDefaults_ManagedSeed(obj *ManagedSeed) {
 func SetDefaults_GardenletDeployment(obj *GardenletDeployment) {
 	// Set default replica count
 	if obj.ReplicaCount == nil {
-		obj.ReplicaCount = pointer.Int32Ptr(1)
+		obj.ReplicaCount = pointer.Int32(1)
 	}
 
 	// Set default revision history limit
 	if obj.RevisionHistoryLimit == nil {
-		obj.RevisionHistoryLimit = pointer.Int32Ptr(1)
+		obj.RevisionHistoryLimit = pointer.Int32(1)
 	}
 
 	// Set default image
@@ -60,7 +61,7 @@ func SetDefaults_GardenletDeployment(obj *GardenletDeployment) {
 
 	// Set default VPA
 	if obj.VPA == nil {
-		obj.VPA = pointer.BoolPtr(true)
+		obj.VPA = pointer.Bool(true)
 	}
 }
 
@@ -86,7 +87,7 @@ func setDefaultsGardenlet(obj *Gardenlet, name, namespace string) {
 
 	// Decode gardenlet config to an external version
 	// Without defaults, since we don't want to set gardenlet config defaults in the resource at this point
-	gardenletConfig, err := helper.DecodeGardenletConfiguration(&obj.Config, false)
+	gardenletConfig, err := encoding.DecodeGardenletConfiguration(&obj.Config, false)
 	if err != nil {
 		return
 	}
@@ -117,11 +118,19 @@ func setDefaultsGardenlet(obj *Gardenlet, name, namespace string) {
 
 	// Set default merge with parent
 	if obj.MergeWithParent == nil {
-		obj.MergeWithParent = pointer.BoolPtr(true)
+		obj.MergeWithParent = pointer.Bool(true)
 	}
 }
 
 func setDefaultsGardenletConfiguration(obj *configv1alpha1.GardenletConfiguration, name, namespace string) {
+	// Initialize resources
+	if obj.Resources == nil {
+		obj.Resources = &configv1alpha1.ResourcesConfiguration{}
+	}
+
+	// Set resources defaults
+	setDefaultsResources(obj.Resources)
+
 	// Initialize seed config
 	if obj.SeedConfig == nil {
 		obj.SeedConfig = &configv1alpha1.SeedConfig{}
@@ -129,6 +138,15 @@ func setDefaultsGardenletConfiguration(obj *configv1alpha1.GardenletConfiguratio
 
 	// Set seed spec defaults
 	setDefaultsSeedSpec(&obj.SeedConfig.SeedTemplate.Spec, name, namespace, false)
+}
+
+func setDefaultsResources(obj *configv1alpha1.ResourcesConfiguration) {
+	if _, ok := obj.Capacity[gardencorev1beta1.ResourceShoots]; !ok {
+		if obj.Capacity == nil {
+			obj.Capacity = make(corev1.ResourceList)
+		}
+		obj.Capacity[gardencorev1beta1.ResourceShoots] = resource.MustParse("250")
+	}
 }
 
 func setDefaultsSeedSpec(spec *gardencorev1beta1.SeedSpec, name, namespace string, withSecretRef bool) {

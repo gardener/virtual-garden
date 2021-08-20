@@ -74,6 +74,7 @@ create-installation:
 install-requirements:
 	@go install -mod=vendor $(REPO_ROOT)/vendor/github.com/onsi/ginkgo/ginkgo
 	@go install -mod=vendor github.com/golang/mock/mockgen
+	@go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 	@$(REPO_ROOT)/hack/install-requirements.sh
 
 .PHONY: revendor
@@ -94,6 +95,10 @@ check:
 .PHONY: format
 format:
 	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/format.sh ./cmd ./pkg ./test
+
+.PHONY: setup-testenv
+setup-testenv:
+	@$(REPO_ROOT)/hack/setup-testenv.sh
 
 .PHONY: test
 test:

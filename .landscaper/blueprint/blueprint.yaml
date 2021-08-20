@@ -110,7 +110,7 @@ imports:
                   type: string
             auditWebhookBatchMaxSize:
               type: string
-            seedAuthorizer
+            seedAuthorizer:
               type: object
               properties:
                 enabled:

@@ -12,16 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package virtualgarden_test
+package virtualgarden
 
 import (
+	"path/filepath"
 	"testing"
+
+	"github.com/gardener/virtual-garden/test/utils/localenvtest"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+)
+
+var (
+	testenv     *localenvtest.Environment
+	projectRoot = filepath.Join("../../")
 )
 
 func TestVirtualGarden(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "VirtualGarden Suite")
 }
+
+var _ = BeforeSuite(func() {
+	var err error
+	testenv, err = localenvtest.New(projectRoot)
+	Expect(err).ToNot(HaveOccurred())
+
+	_, err = testenv.Start()
+	Expect(err).ToNot(HaveOccurred())
+})
+
+var _ = AfterSuite(func() {
+	Expect(testenv.Stop()).ToNot(HaveOccurred())
+})

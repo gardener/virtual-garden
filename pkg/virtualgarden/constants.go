@@ -20,4 +20,13 @@ const (
 	LabelKeyRole      = "role"
 )
 
+// Keys of annotations for checksums
+const (
+	ChecksumKeyKubeAggregatorCA            = "checksum/secret-kube-aggregator-ca"
+	ChecksumKeyKubeAggregatorClient        = "checksum/secret-kube-aggregator-client"
+	ChecksumKeyKubeAPIServerCA             = "checksum/secret-kube-apiserver-ca"
+	ChecksumKeyKubeAPIServerServer         = "checksum/secret-kube-apiserver-server"
+	ChecksumKeyKubeControllerManagerClient = "checksum/secret-kube-controller-manager-client"
+)
+
 const SecretKeyKubeconfig = "kubeconfig"
